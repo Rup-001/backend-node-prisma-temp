@@ -1,0 +1,129 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  USER
+  ADMIN
+  SUPERADMIN
+}
+
+enum TokenType {
+  ACCESS
+  REFRESH
+  RESET_PASSWORD
+  VERIFY_EMAIL
+}
+
+model User {
+  id                 String    @id @default(uuid())
+  firstName          String?
+  lastName           String?
+  fullName           String?
+  email              String    @unique
+  profileImage       String?
+  password           String
+  role               Role      @default(USER)
+  callingCode        String?
+  phoneNumber        String?   @unique
+  nidNumber          String?   @unique
+  isNIDVerified      Boolean   @default(false)
+  dataOfBirth        DateTime?
+  address            String?
+  oneTimeCode        String?
+  isEmailVerified    Boolean   @default(false)
+  isResetPassword    Boolean   @default(false)
+  isProfileCompleted Boolean   @default(false)
+  fcmToken           String?
+  isDeleted          Boolean   @default(false)
+  securitySettings   Json?     @default("{\"recoveryEmail\": null, \"recoveryPhone\": null, \"securityQuestion\": null}")
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+  tokens             Token[]
+  notifications      Notification[]
+
+  @@map("users")
+}
+
+model Token {
+  id          String    @id @default(uuid())
+  token       String    @unique
+  type        TokenType
+  expires     DateTime
+  blacklisted Boolean   @default(false)
+  userId      String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@map("tokens")
+}
+
+model HeroSection {
+  id          String   @id @default(uuid())
+  title       String
+  description String?
+  image       String?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("hero_sections")
+}
+
+model AboutUs {
+  id        String   @id @default(uuid())
+  content   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("about_us")
+}
+
+model Notification {
+  id        String   @id @default(uuid())
+  title     String
+  message   String
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("notifications")
+}
+
+model PrivacyPolicy {
+  id        String   @id @default(uuid())
+  content   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("privacy_policies")
+}
+
+model TermsConditions {
+  id        String   @id @default(uuid())
+  content   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("terms_conditions")
+}
+
+model Support {
+  id        String   @id @default(uuid())
+  name      String
+  email     String
+  message   String
+  status    String   @default("pending")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("supports")
+}
